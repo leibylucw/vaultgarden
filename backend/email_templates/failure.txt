@@ -1,0 +1,3 @@
+A vaultwarden backup job has failed with the following error:
+
+{error}
