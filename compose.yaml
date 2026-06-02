@@ -1,0 +1,52 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    hostname: vaultwarden
+    env_file: vaultwarden/vaultwarden.env
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:6283:80
+    volumes:
+      - vaultwarden-data:/data
+
+  vaultwarden-backup:
+    image: bruceforce/vaultwarden-backup:latest
+    container_name: vaultwarden-backup
+    hostname: vaultwarden-backup
+    env_file: vaultwarden-backup/vaultwarden-backup.env
+    restart: unless-stopped
+    volumes:
+      - vaultwarden-data:/data:ro
+      - vaultwarden-backups:/backups
+      - vaultwarden-logs:/logs
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    image: backend
+    container_name: backend
+    hostname: backend
+    env_file: backend/backend.env
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:6284:5000
+    volumes:
+      - ./backend/backend.py:/app/backend.py
+      - ./backend/email_templates:/app/email_templates
+      - vaultwarden-backups:/backups
+      - vaultwarden-logs:/logs
+
+volumes:
+  vaultwarden-data:
+    name: vaultwarden-data
+    external: true
+
+  vaultwarden-backups:
+    name: vaultwarden-backups
+    external: true
+
+  vaultwarden-logs:
+    name: vaultwarden-logs
+    external: true
