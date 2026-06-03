@@ -3,8 +3,21 @@ services:
     image: vaultwarden/server:latest
     container_name: vaultwarden
     hostname: vaultwarden
+    user: 999:999
     env_file: vaultwarden/vaultwarden.env
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    tmpfs:
+      - /tmp:size=128M,noexec,nosuid
+    mem_limit: 512m
+    cpus: "1.0"
     ports:
       - 127.0.0.1:6283:80
     volumes:
@@ -14,8 +27,11 @@ services:
     image: bruceforce/vaultwarden-backup:latest
     container_name: vaultwarden-backup
     hostname: vaultwarden-backup
+    user: root:root
     env_file: vaultwarden-backup/vaultwarden-backup.env
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - vaultwarden-data:/data:ro
       - vaultwarden-backups:/backups
@@ -28,13 +44,16 @@ services:
     image: backend
     container_name: backend
     hostname: backend
+    user: 999:999
     env_file: backend/backend.env
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
       - 127.0.0.1:6284:5000
     volumes:
-      - ./backend/backend.py:/app/backend.py
-      - ./backend/email_templates:/app/email_templates
       - vaultwarden-backups:/backups
       - vaultwarden-logs:/logs
 
